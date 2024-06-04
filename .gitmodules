@@ -1,0 +1,3 @@
+[submodule "app/src/main/cpp/libunwindstack-ndk"]
+	path = app/src/main/cpp/libunwindstack-ndk
+	url = https://github.com/getsentry/libunwindstack-ndk.git

@@ -10,7 +10,15 @@ cmake_minimum_required(VERSION 3.22.1)
 # with ${CMAKE_PROJECT_NAME} (both CMake variables are in-sync within the top level
 # build script scope).
 project("Cvmunwindstack")
-
+macro(SET_OPTION option value)
+    set(${option} ${value} CACHE INTERNAL "" FORCE)
+endmacro()
+SET_OPTION(DOBBY_GENERATE_SHARED OFF)
+if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    SET_OPTION(DOBBY_DEBUG OFF)
+endif ()
+add_subdirectory(Dobby)
+target_include_directories(dobby PUBLIC Dobby/include)
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
 # You can define multiple libraries, and CMake builds them for you.
@@ -40,4 +48,5 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         # List libraries link to the target library
         android
         log
-        unwindstack)
+        unwindstack
+        dobby)

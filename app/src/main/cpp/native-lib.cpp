@@ -4,6 +4,7 @@
 #include <unwindstack/Unwinder.h>
 #include <unwindstack/RegsArm64.h>
 #include <unwindstack/UserArm64.h>
+#include "dobby.h"
 
 void printNativeStack(sigcontext *sigcontext) {
     std::string str;
@@ -52,6 +53,14 @@ void setupSignalHandler() {
 
 }
 
+void *(*Old_a)(int a);
+void Demo(int a) {
+    __android_log_print(ANDROID_LOG_ERROR, "Cvm", "Demo a = %d", a);
+}
+
+void Demoa(int a) {
+    __android_log_print(ANDROID_LOG_ERROR, "Cvm", "Demo a = 999");
+}
 extern "C" JNIEXPORT jstring
 
 JNICALL
@@ -61,5 +70,20 @@ Java_com_Cvm_unwindstack_MainActivity_stringFromJNI(
     std::string hello = "Hello from C++";
     setupSignalHandler();
     raise(SIGSYS);
+    Demo(123);
     return env->NewStringUTF(hello.c_str());
+}
+static void Demo_handler(void *address, DobbyRegisterContext *ctx) {
+    raise(SIGSYS);
+//    printNativeStack(reinterpret_cast<sigcontext *>(ctx->dmmpy_1));
+}
+
+jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
+    JNIEnv *env = nullptr;
+//    DobbyHook((void *) Demo, (dobby_dummy_func_t) Demoa, (dobby_dummy_func_t *) &Old_a);
+    DobbyInstrument((void *) Demo,Demo_handler);
+    if (vm->GetEnv((void **) &env, JNI_VERSION_1_6) == JNI_OK) {
+        return JNI_VERSION_1_6;
+    }
+    return 0;
 }
